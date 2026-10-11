@@ -1,0 +1,93 @@
+{
+  "slideSeconds": 10,
+  "posters": {
+    "tea.jpg": {
+      "title": "Tea",
+      "link": ""
+    },
+    "forest-line.jpg": {
+      "title": "Forest line",
+      "link": ""
+    },
+    "house-plant.jpg": {
+      "title": "House plant",
+      "link": ""
+    },
+    "the-tower.jpg": {
+      "title": "The Tower",
+      "link": ""
+    },
+    "fruit.jpg": {
+      "title": "Fruit",
+      "link": ""
+    },
+    "under-the-canopy.jpg": {
+      "title": "Under the canopy",
+      "link": ""
+    },
+    "cargo-bike.jpg": {
+      "title": "Cargo bike",
+      "link": ""
+    },
+    "reading-lamp.jpg": {
+      "title": "Reading lamp",
+      "link": ""
+    },
+    "tower-at-night.jpg": {
+      "title": "Tower at night",
+      "link": ""
+    },
+    "garden-tools.jpg": {
+      "title": "Garden tools",
+      "link": ""
+    },
+    "tunnel-path.jpg": {
+      "title": "Tunnel path",
+      "link": ""
+    },
+    "woven-curtain.jpg": {
+      "title": "Woven curtain",
+      "link": ""
+    },
+    "evening-house.jpg": {
+      "title": "Evening house",
+      "link": ""
+    },
+    "canopy-from-below.jpg": {
+      "title": "Canopy from below",
+      "link": ""
+    },
+    "pears.jpg": {
+      "title": "Pears",
+      "link": ""
+    },
+    "valley-viaduct.jpg": {
+      "title": "Valley viaduct",
+      "link": ""
+    },
+    "train-on-the-viaduct.jpg": {
+      "title": "Train on the viaduct",
+      "link": ""
+    },
+    "skybridge.jpg": {
+      "title": "Skybridge",
+      "link": ""
+    },
+    "old-trees.jpg": {
+      "title": "Old trees",
+      "link": ""
+    },
+    "wind-turbine.jpg": {
+      "title": "Wind turbine",
+      "link": ""
+    },
+    "lattice-tunnel.jpg": {
+      "title": "Lattice tunnel",
+      "link": ""
+    },
+    "grow-local.jpg": {
+      "title": "Grow local",
+      "link": ""
+    }
+  }
+}
