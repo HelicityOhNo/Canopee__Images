@@ -1,4 +1,4 @@
-# Builds the poster atlases and manifest on every push to main, then publishes them to GitHub Pages.
+# Builds the poster atlases, their manifest and the supporter list on every push to main, then publishes them to GitHub Pages.
 # Repository setting: Settings > Pages > Source: GitHub Actions.
 # If the build fails, nothing is published and the live site keeps its previous version.
 name: Publish posters

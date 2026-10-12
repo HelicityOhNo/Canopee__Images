@@ -3,10 +3,11 @@
 
     python tools/build_atlases.py
 
-Reads   posters/       one image per poster (JPG, PNG or WebP, portrait 1:2, ideally 512 x 1024)
-        posters.json   display time, play order, and each poster's title and link
-Writes  _site/         manifest.json, pub_atlas_N.jpg (2048 px, PC), pub_atlas_N_quest.jpg (1024 px, Quest and iOS),
-                       and index.html with thumbs/ for the public preview page
+Reads   posters/          one image per poster (JPG, PNG or WebP, portrait 1:2, ideally 512 x 1024)
+        posters.json      display time, play order, and each poster's title and link
+        supporters.json   the Ko-fi supporters named on the About page of the world's menu
+Writes  _site/            manifest.json, pub_atlas_N.jpg (2048 px, PC), pub_atlas_N_quest.jpg (1024 px, Quest and iOS),
+                          supporters.json, and index.html with thumbs/ for the public preview page
 
 VRChat lets a world download one image every five seconds, so posters travel as up to three atlases of
 eight (four columns by two rows, left to right, then top to bottom) instead of one file each.
@@ -32,6 +33,8 @@ MAX_POSTERS = 3 * PER_ATLAS
 CELL_PC = (512, 1024)
 CELL_QUEST = (256, 512)
 THUMB = (384, 768)
+MAX_SUPPORTERS = 400
+MAX_NAME_LENGTH = 40
 BACKGROUND = (21, 27, 24)
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 IN_ACTIONS = os.environ.get("GITHUB_ACTIONS") == "true"
@@ -86,6 +89,35 @@ def load_config(path: Path) -> tuple[float, dict]:
     if not isinstance(posters, dict):
         fail(f'"posters" in {path.name} must be an object, keyed by image file name', path.name)
     return (int(seconds) if float(seconds).is_integer() else seconds), posters
+
+
+def load_supporters(path: Path) -> list[str] | None:
+    """The supporter names in file order, cleaned the way the world cleans them (SP_Reglages._Noms), or None without a file."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        fail(f"{path.name} is not valid JSON: {error.msg} (line {error.lineno}, column {error.colno})", path.name, error.lineno)
+    names = data.get("supporters") if isinstance(data, dict) else None
+    if not isinstance(names, list):
+        fail(f'{path.name} must contain {{"supporters": ["name", ...]}}', path.name)
+    cleaned = []
+    for name in names:
+        if not isinstance(name, str):
+            warn(f"{name!r} is not a text value: left out", path.name)
+            continue
+        name = re.sub(r"\s+", " ", name).strip()
+        if not name:
+            continue
+        if len(name) > MAX_NAME_LENGTH:
+            warn(f"{name!r} is longer than {MAX_NAME_LENGTH} characters: the world cuts it there", path.name)
+            name = name[:MAX_NAME_LENGTH].rstrip()
+        cleaned.append(name)
+    if len(cleaned) > MAX_SUPPORTERS:
+        warn(f"{len(cleaned)} supporters, the world shows at most {MAX_SUPPORTERS}", path.name)
+        cleaned = cleaned[:MAX_SUPPORTERS]
+    return cleaned
 
 
 def load_poster(path: Path) -> Image.Image | None:
@@ -165,8 +197,9 @@ def card_html(thumb: str, title: str, link: str) -> str:
     return CARD.replace("@@THUMB@@", html.escape(thumb)).replace("@@TITLE@@", html.escape(title)).replace("@@LINK@@", link_html)
 
 
-def build(posters_dir: Path, config_path: Path, out: Path) -> None:
+def build(posters_dir: Path, config_path: Path, supporters_path: Path, out: Path) -> None:
     seconds, entries = load_config(config_path)
+    supporters = load_supporters(supporters_path)
     files = {}
     if posters_dir.is_dir():
         files = {p.name: p for p in sorted(posters_dir.iterdir(), key=lambda p: p.name.lower())
@@ -218,6 +251,9 @@ def build(posters_dir: Path, config_path: Path, out: Path) -> None:
     manifest = {"slideSeconds": seconds, "atlases": atlas_count, "ads": ads}
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / "index.html").write_text(PAGE.replace("@@CARDS@@", "".join(cards)).replace("@@REPO@@", html.escape(REPOSITORY)), encoding="utf-8")
+    if supporters is not None:
+        (out / "supporters.json").write_text(json.dumps({"supporters": supporters}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"{len(supporters)} supporter(s)")
 
     linked = sum(1 for ad in ads if ad["link"])
     print(f"{len(ads)} posters in {atlas_count} atlas(es), {seconds} s each, {linked} with a link")
@@ -232,9 +268,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Pack the Station Canopée posters into the files the VRChat world downloads.")
     parser.add_argument("--posters", type=Path, default=ROOT / "posters", help="folder of poster images (default: posters/)")
     parser.add_argument("--config", type=Path, default=ROOT / "posters.json", help="titles, links and play order (default: posters.json)")
+    parser.add_argument("--supporters", type=Path, default=ROOT / "supporters.json", help="Ko-fi supporter names (default: supporters.json)")
     parser.add_argument("--out", type=Path, default=ROOT / "_site", help="output folder (default: _site/)")
     args = parser.parse_args()
-    build(args.posters, args.config, args.out)
+    build(args.posters, args.config, args.supporters, args.out)
 
 
 if __name__ == "__main__":
